@@ -1,7 +1,9 @@
 import { FetchOptions, SimpleAdapter } from "../adapters/types";
 
-const fetch = async ({ startTimestamp, endTimestamp }: FetchOptions) => {
-  const res = await fetch(`https://api-backend-mainnet.up.railway.app/defillama/derivatives?start=${startTimestamp}&end=${endTimestamp}`);
+const adapterFetch = async ({ startTimestamp, endTimestamp }: FetchOptions) => {
+  const res = await globalThis.fetch(
+    `https://api-backend-mainnet.up.railway.app/defillama/derivatives?start=${startTimestamp}&end=${endTimestamp}`
+  );
   const data = await res.json();
 
   return {
@@ -19,7 +21,7 @@ const adapter: SimpleAdapter = {
   version: 2,
   adapter: {
     arbitrum: {
-      fetch,
+      fetch: adapterFetch,
       start: "2026-04-15",
       meta: {
         methodology,
@@ -29,3 +31,4 @@ const adapter: SimpleAdapter = {
 };
 
 export default adapter;
+
