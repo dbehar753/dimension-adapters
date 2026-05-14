@@ -20,7 +20,7 @@ const adapter: SimpleAdapter = {
   adapter: {
     arbitrum: {
       fetch,
-      start: "2026-05-14",
+      start: "2026-04-15",
       meta: {
         methodology,
       },
