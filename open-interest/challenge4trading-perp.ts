@@ -1,15 +1,30 @@
 import { FetchOptions, SimpleAdapter } from "../adapters/types";
 
+const toNumberOrZero = (value: any) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
 const adapterFetch = async ({ startTimestamp, endTimestamp }: FetchOptions) => {
   const res = await globalThis.fetch(
     `https://api-backend-mainnet.up.railway.app/defillama/derivatives?start=${startTimestamp}&end=${endTimestamp}`
   );
+
+  if (!res.ok) {
+    console.error(`challenge4trading-perp open-interest fetch failed: ${res.status} ${res.statusText}`);
+    return {
+      openInterestAtEnd: 0,
+      longOpenInterestAtEnd: 0,
+      shortOpenInterestAtEnd: 0,
+    };
+  }
+
   const data = await res.json();
 
   return {
-    openInterestAtEnd: data.openInterestAtEndUsd,
-    longOpenInterestAtEnd: data.longOpenInterestAtEndUsd,
-    shortOpenInterestAtEnd: data.shortOpenInterestAtEndUsd,
+    openInterestAtEnd: toNumberOrZero(data.openInterestAtEndUsd),
+    longOpenInterestAtEnd: toNumberOrZero(data.longOpenInterestAtEndUsd),
+    shortOpenInterestAtEnd: toNumberOrZero(data.shortOpenInterestAtEndUsd),
   };
 };
 
