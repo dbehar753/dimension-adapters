@@ -14,7 +14,8 @@ const adapterFetch = async ({ startTimestamp, endTimestamp }: FetchOptions) => {
 };
 
 const methodology = {
-  OpenInterest: "Open interest is computed by the live production backend from positions that remain open at the end of the requested time window.",
+  OpenInterest:
+    "Open interest is computed by the live production backend from positions that remain open at the end of the requested time window.",
 };
 
 const adapter: SimpleAdapter = {
@@ -23,12 +24,11 @@ const adapter: SimpleAdapter = {
     arbitrum: {
       fetch: adapterFetch,
       start: "2026-04-15",
-      meta: {
-        methodology,
-      },
     },
   },
+  methodology,
 };
 
 export default adapter;
+
 
