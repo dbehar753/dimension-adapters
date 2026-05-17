@@ -15,6 +15,13 @@ const ABIS = {
     "event RolloverAccrued(uint256 indexed positionId,uint256 feeUsdc,uint256 totalAccruedFeeUsdc,uint256 asOfTimestamp)",
 };
 
+const LABELS = {
+  OPEN: "openFee",
+  CLOSE: "closeFee",
+  LIQUIDATION: "liquidationFee",
+  ROLLOVER: "rolloverFee",
+} as const;
+
 const toBigIntSafe = (value: any): bigint => {
   if (value === null || value === undefined) return 0n;
   try {
@@ -51,37 +58,38 @@ const fetch = async (options: FetchOptions): Promise<FetchResultV2> => {
   for (const log of openedLogs) {
     const fee = toBigIntSafe(log.openFee);
     if (fee > 0n) {
-      dailyFees.add(USDC_ADDRESS, fee.toString());
-      dailyUserFees.add(USDC_ADDRESS, fee.toString());
+      dailyFees.add(USDC_ADDRESS, fee.toString(), LABELS.OPEN);
+      dailyUserFees.add(USDC_ADDRESS, fee.toString(), LABELS.OPEN);
     }
   }
 
   for (const log of closedLogs) {
     const fee = toBigIntSafe(log.closeFee);
     if (fee > 0n) {
-      dailyFees.add(USDC_ADDRESS, fee.toString());
-      dailyUserFees.add(USDC_ADDRESS, fee.toString());
+      dailyFees.add(USDC_ADDRESS, fee.toString(), LABELS.CLOSE);
+      dailyUserFees.add(USDC_ADDRESS, fee.toString(), LABELS.CLOSE);
     }
   }
 
   for (const log of liquidatedLogs) {
     const fee = toBigIntSafe(log.liquidationFee);
     if (fee > 0n) {
-      dailyFees.add(USDC_ADDRESS, fee.toString());
-      dailyUserFees.add(USDC_ADDRESS, fee.toString());
+      dailyFees.add(USDC_ADDRESS, fee.toString(), LABELS.LIQUIDATION);
+      dailyUserFees.add(USDC_ADDRESS, fee.toString(), LABELS.LIQUIDATION);
     }
   }
 
   for (const log of rolloverLogs) {
     const fee = toBigIntSafe(log.feeUsdc);
     if (fee > 0n) {
-      dailyFees.add(USDC_ADDRESS, fee.toString());
-      dailyUserFees.add(USDC_ADDRESS, fee.toString());
+      dailyFees.add(USDC_ADDRESS, fee.toString(), LABELS.ROLLOVER);
+      dailyUserFees.add(USDC_ADDRESS, fee.toString(), LABELS.ROLLOVER);
     }
   }
 
   return {
     dailyFees,
+    dailyRevenue: dailyFees,
     dailyUserFees,
   };
 };
@@ -89,8 +97,31 @@ const fetch = async (options: FetchOptions): Promise<FetchResultV2> => {
 const methodology = {
   Fees:
     "Daily fees are tracked onchain from Arbitrum events and include open fees, close fees, liquidation fees, and rollover accruals emitted by the perp contract.",
+  Revenue:
+    "Daily revenue is currently mapped to the same onchain fee streams counted in dailyFees.",
   UserFees:
     "Daily user fees are the total fees paid by traders onchain, including open fees, close fees, liquidation fees, and rollover accruals.",
+};
+
+const breakdownMethodology = {
+  Fees: {
+    [LABELS.OPEN]: "Open fees emitted in PositionOpened events.",
+    [LABELS.CLOSE]: "Close fees emitted in PositionClosed events.",
+    [LABELS.LIQUIDATION]: "Liquidation fees emitted in PositionLiquidated events.",
+    [LABELS.ROLLOVER]: "Rollover fees emitted in RolloverAccrued events.",
+  },
+  UserFees: {
+    [LABELS.OPEN]: "Open fees paid by traders.",
+    [LABELS.CLOSE]: "Close fees paid by traders.",
+    [LABELS.LIQUIDATION]: "Liquidation fees paid by traders.",
+    [LABELS.ROLLOVER]: "Rollover fees accrued to traders.",
+  },
+  Revenue: {
+    [LABELS.OPEN]: "Open fee revenue.",
+    [LABELS.CLOSE]: "Close fee revenue.",
+    [LABELS.LIQUIDATION]: "Liquidation fee revenue.",
+    [LABELS.ROLLOVER]: "Rollover fee revenue.",
+  },
 };
 
 const adapter: SimpleAdapter = {
@@ -100,8 +131,10 @@ const adapter: SimpleAdapter = {
   chains: [CHAIN.ARBITRUM],
   start: "2026-04-15",
   methodology,
+  breakdownMethodology,
 };
 
 export default adapter;
+
 
 
